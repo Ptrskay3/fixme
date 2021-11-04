@@ -1,0 +1,16 @@
+[package]
+name = "fixme"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "fixme"
+
+
+[dependencies]
+regex = "1.5"
+lazy_static = "1.4.0"

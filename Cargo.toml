@@ -14,3 +14,6 @@ name = "fixme"
 [dependencies]
 regex = "1.5"
 lazy_static = "1.4.0"
+jwalk = "0.6"
+rayon = "1.5"
+colored = "2.0.0"

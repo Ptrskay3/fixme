@@ -13,28 +13,28 @@ lazy_static! {
 }
 
 fn count_todos() -> usize {
-    WalkDir::new("/home/leehpeter/mozaweb/js/scripts/mbooklet")
+    let count = std::sync::atomic::AtomicUsize::new(0);
+    WalkDir::new(".")
         .parallelism(Parallelism::RayonNewPool(4))
         .into_iter()
         .par_bridge()
-        .filter_map(|dir_entry_result| {
-            let dir_entry = dir_entry_result.ok()?;
+        .for_each(|dir_entry_result| {
+            let dir_entry = dir_entry_result.unwrap();
             if dir_entry.file_type().is_file()
-                && dir_entry.path().extension().and_then(OsStr::to_str) == Some("js")
+                && (dir_entry.path().extension().and_then(OsStr::to_str) == Some("js"))
             {
                 let path = dir_entry.path();
-                let text = std::fs::read_to_string(&path).ok()?;
+                let text = std::fs::read_to_string(&path).unwrap_or_default();
                 for (i, line) in text.lines().enumerate() {
-                    if let Some(_) = RE.find(&line) {
+                    if RE.find(line).is_some() {
+                        count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                         println!("{}:{}:{}", &path.display(), i + 1, 0);
                         println!("{}", &line.red());
-                        return Some(true);
                     }
                 }
             }
-            None
-        })
-        .count()
+        });
+    count.load(std::sync::atomic::Ordering::Relaxed)
 }
 
 fn main() {
@@ -51,5 +51,5 @@ _/\\\\\\\\\\\\\\\_______________________________________________________
        \///______________\///__\///____\///__\///___\///___\///____\//////////_"#
     );
 
-    println!("{:?}", count_todos());
+    println!("Fixme count {:?}", count_todos());
 }

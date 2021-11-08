@@ -12,9 +12,23 @@ lazy_static! {
         .expect("Failed to initialize search regex.");
 }
 
+fn count_todos_with_ignore() {
+    let count = std::sync::atomic::AtomicUsize::new(0);
+    let walker = ignore::WalkBuilder::new("/home/leehpeter/mozaweb/js")
+        .build_parallel()
+        .run(|| {
+            Box::new(|res| {
+                count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                // println!("{:?}", res);
+                return ignore::WalkState::Continue;
+            })
+        });
+    println!("{:?}", count.load(std::sync::atomic::Ordering::Relaxed));
+}
+
 fn count_todos() -> usize {
     let count = std::sync::atomic::AtomicUsize::new(0);
-    WalkDir::new(".")
+    WalkDir::new("/home/leehpeter/mozaweb/")
         .parallelism(Parallelism::RayonNewPool(4))
         .into_iter()
         .par_bridge()
@@ -52,4 +66,5 @@ _/\\\\\\\\\\\\\\\_______________________________________________________
     );
 
     println!("Fixme count {:?}", count_todos());
+    count_todos_with_ignore();
 }
